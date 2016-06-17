@@ -1,0 +1,20 @@
+{
+  "name": "stylepurge",
+  "version": "0.0.1",
+  "description": "Finds a diff of unused styles by checking a URL",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Andrew Krawchyk <akrawchyk@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.4.0",
+    "cssunminifier": "^0.0.2",
+    "oust": "^0.3.0",
+    "purifycss": "^1.1.9",
+    "request": "^2.72.0",
+    "temp": "^0.8.3",
+    "yargs": "^4.7.1"
+  }
+}
