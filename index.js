@@ -41,20 +41,34 @@ html.on('close', function () {
     var contents = stream.read()
     if (!contents) return
 
-    styles = styles.concat(oust(contents, 'stylesheets').filter(function (styleUrl) {
-      return url.parse(styleUrl).hostname.endsWith(inspectUrl.hostname)
-    }).map(function (styleUrl) {
-      return url.parse(styleUrl)
-    }))
+    styles = styles.concat(flatten(
+      oust(contents, 'stylesheets'),
+      oust(contents, 'preload')
+    ))
+
+    styles = styles.map(function (styleHref) {
+      var u = url.parse(styleHref)
+      if (!u.hostname) u = url.parse(inspectUrl.protocol + '//' + inspectUrl.host + styleHref)
+      return u
+    }).filter(function (styleUrl) {
+      return styleUrl.hostname && styleUrl.hostname.endsWith(inspectUrl.hostname)
+    })
     // FIXME: also find <script> tags, this just looks for <script src="">
-    scripts = scripts.concat(oust(contents, 'scripts').filter(function (styleUrl) {
-      return url.parse(styleUrl).hostname.endsWith(inspectUrl.hostname)
-    }).map(function (styleUrl) {
-      return url.parse(styleUrl)
-    }))
+    scripts = scripts.concat(oust(contents, 'scripts').map(function (scriptHref) {
+      var u = url.parse(scriptHref)
+      if (!u.hostname) u = url.parse(inspectUrl.protocol + '//' + inspectUrl.host + scriptHref)
+      return u
+    })).filter(function (scriptUrl) {
+      return scriptUrl.hostname && scriptUrl.hostname.endsWith(inspectUrl.hostname)
+    })
   })
 
   stream.on('close', function () {
+    if (!styles.length) {
+      process.stderr.write('No style hrefs found')
+      process.exit(1)
+    }
+
     // get stylesheets
     var css = styles.map(function (styleUrl) {
       return new Promise(function (resolve, reject) {
