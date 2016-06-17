@@ -10,7 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^3.4.0",
-    "cssunminifier": "^0.0.2",
+    "cssbeautify": "^0.3.1",
     "oust": "^0.3.0",
     "purifycss": "^1.1.9",
     "request": "^2.72.0",

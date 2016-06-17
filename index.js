@@ -1,10 +1,10 @@
 var fs = require('fs')
 var url = require('url')
 var Promise = require('bluebird')
-var temp = require('temp')
+var temp = require('temp').track()
 var request = require('request')
 var purifycss = require('purifycss')
-var cssunminifier = require('cssunminifier')
+var cssbeautify = require('cssbeautify')
 var oust = require('oust')
 var argv = require('yargs').argv
 var execFile = require('child_process').execFile
@@ -14,8 +14,6 @@ function flatten(arr1, arr2) {
     return a.concat(b)
   }, [])
 }
-
-temp.track()
 
 if (!argv.url) {
   process.stderr.write('No url provided.')
@@ -89,15 +87,17 @@ html.on('close', function () {
       var content = flatten([html.path], localJs)
 
       purifycss(content, localCss, function (purifiedCss) {
-        var writePurifiedCss = temp.createWriteStream({'suffix': '.css'})
-        var writeOriginalCss = temp.createWriteStream({'suffix': '.css'})
+        var writePurifiedCss = temp.createWriteStream({'prefix': 'purified-', 'suffix': '.css'})
+        var writeOriginalCss = temp.createWriteStream({'prefix': 'original-', 'suffix': '.css'})
 
         // write purified css
         var purifiedOutCss = new Promise(function (resolve, reject) {
           writePurifiedCss
             .on('finish', resolve)
             .on('error', reject)
-            .end(cssunminifier.unminify(purifiedCss, 4))
+            .end(cssbeautify(purifiedCss, {
+              autosemicolon: true
+            }))
         })
 
         var outCss = localCss.map(function (c) {
@@ -108,7 +108,9 @@ html.on('close', function () {
                 var contents = this.read()
                 if (!contents) return
                 writeOriginalCss.write(
-                  cssunminifier.unminify(contents.toString(), 4))
+                  cssbeautify(contents.toString(), {
+                    autosemicolon: true
+                  }))
               })
               .on('close', resolve)
               .on('error', reject)
@@ -124,8 +126,12 @@ html.on('close', function () {
 
             // make diff
             execFile('diff', [
-              writePurifiedCss.path,
-              writeOriginalCss.path
+              '--unified=3',
+              '--ignore-space-change',
+              '--ignore-all-space',
+              '--ignore-blank-lines',
+              writeOriginalCss.path,
+              writePurifiedCss.path
             ], {encoding: 'utf8'}, function (err, stdout, stderr) {
               if (stderr) {
                 process.stderr.write(stderr)
