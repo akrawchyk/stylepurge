@@ -18,15 +18,12 @@ const EOL = require('os').EOL
 
 
 const ts = new Transform({
-  read() {
-  },
-
-  write(chunk, encoding, next) {
+  transform(chunk, encoding, next) {
     const decoder = new StringDecoder('utf8')
     const page = JSON.parse(decoder.write(chunk)) // page { url, response }
 
     // parse html
-    const $ = cheerio.load(page.response)
+    const $ = cheerio.load(page.html)
     const p = url.parse(page.url)
 
     function resolveUrl(href) {
@@ -158,7 +155,7 @@ const ts = new Transform({
       console.log('sending updated page')
       // TODO send this page to the purify module
       // console.log(page)
-      next(`${JSON.stringify(page)}${EOL}`)
+      next(null, `${JSON.stringify(page)}${EOL}`)
     })
       .catch((err) => {
         next(err)

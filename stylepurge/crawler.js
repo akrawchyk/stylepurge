@@ -35,7 +35,7 @@ function worker(url) {
     .then((content) => {
       sitepage.close()
       phInstance.exit()
-      rs.push(`${JSON.stringify({ url, response: content })}${EOL}`)
+      rs.push(`${JSON.stringify({ url, html: content })}${EOL}`)
     })
     .catch((err) => {
       process.stderr.write(err.message)

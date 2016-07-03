@@ -12,6 +12,7 @@
     "cheerio": "^0.20.0",
     "ndjson": "^1.4.3",
     "phantom": "^2.1.10",
+    "purify-css": "^1.1.9",
     "superagent": "^2.0.0"
   }
 }
