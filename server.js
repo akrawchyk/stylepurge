@@ -24,21 +24,21 @@ app.get('/purge', (req, res, next) => {
 
     const u = url || urls
 
-    const stream = stylepurge(url || urls).pipe(res)
+    // const stream = stylepurge(url || urls).pipe(res)
     // stream.on('end', () => {
     //   console.log('express end')
     // })
 
     // FIXME listen for 'end' event to do res.end instead
-    // var stream = stylepurge(u)
-    // let count = 0
-    // stream.on('data', (chunk) => {
-    //   res.write(chunk)
-    //   count += 1
-    //   if (count === u.length) {
-    //     res.end()
-    //   }
-    // })
+    var stream = stylepurge(u)
+    let count = 0
+    stream.on('data', (chunk) => {
+      res.write(chunk)
+      count += 1
+      if (count === u.length) {
+        res.end()
+      }
+    })
   }
 })
 

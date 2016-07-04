@@ -2,6 +2,7 @@
 
 
 const purifycss = require('purify-css')
+const EOL = require('os').EOL
 const StringDecoder = require('string_decoder').StringDecoder
 const Transform = require('readable-stream').Transform
 
@@ -15,7 +16,7 @@ function purify() {
       // { url, html, styles, scripts }
       try {
         purifycss(`${page.html} ${page.scripts}`, page.styles, (purified) => {
-          next(null, purified)
+          next(null, `${JSON.stringify({ url: page.url, purified: purified, original: page.styles })}${EOL}`)
         })
       } catch (e) {
         next(e)

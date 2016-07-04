@@ -9,18 +9,23 @@ module.exports = {
     filename: 'app.bundle.js',
   },
   loaders: [{
-      test: /\.js$/,
-      exclude: /(node_modules)/,
-      loader: 'babel',
-      query: {
-        presets: ['es2015'],
-        plugins: ['transform-runtime']
-      }
+    test: /\.js$/,
+    exclude: /(node_modules)/,
+    loader: 'babel',
+    query: {
+      presets: ['es2015'],
+      plugins: ['transform-runtime']
+    }
+  }, {
+    test: /\.css$/, loader: 'style!css'
+  }, {
+    test: /\.png$/, loader: 'url?limit=10000'
   }],
   plugins: [
     new webpack.ProvidePlugin({
       'Promise': 'exports?global.Promise!es6-promise',
-      'fetch': 'exports?global.fetch!whatwg-fetch'
+      'fetch': 'exports?global.fetch!whatwg-fetch',
+      'Prism': 'exports?global.Prism!prismjs'
     })
   ]
 }
