@@ -11,13 +11,14 @@ const ts = new Transform({
     const decoder = new StringDecoder('utf8')
     const page = JSON.parse(decoder.write(chunk)) // page { url, response }
 
-    // write page to temp files
-
     // { url, html, styles, scripts }
-    console.log('purifying')
-    purifycss(`${page.html} ${page.scripts}`, page.styles, (purified) => {
-      next(null, purified)
-    })
+    try {
+      purifycss(`${page.html} ${page.scripts}`, page.styles, (purified) => {
+        next(null, purified)
+      })
+    } catch (e) {
+      next(e)
+    }
   },
 
   flush() {

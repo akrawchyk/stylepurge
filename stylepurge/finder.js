@@ -39,7 +39,6 @@ const ts = new Transform({
       const $el = $(el)
       return new Promise((resolve, reject) => {
         if ($el.is('style')) {
-          console.log('style finder: STYLE')
           resolve($el.text())
         } else if ($el.is('link') && $el.attr('rel') === 'stylesheet' && $el.attr('href')) {
           const u = resolveUrl($el.attr('href'))
@@ -50,15 +49,12 @@ const ts = new Transform({
                 reject(err)
               }
 
-              console.log(`style finder: CSS ${u.href}`)
               resolve(res.text)
             })
           } else {
-            console.log('style finder: NOT LOCAL')
             resolve('')
           }
         } else {
-          console.log('style finder: UNRECOGNIZED')
           resolve('')
         }
       })
@@ -76,29 +72,27 @@ const ts = new Transform({
           if (u.host && u.host.indexOf(p.host) >= 0) {
             request.get(u.href).buffer(true).end((err, res) => {
               if (err) {
-                console.log(err)
                 reject(err)
               }
 
-              console.log(`script finder: JS ${u.href}`)
               resolve(res.text)
             })
           } else {
-            console.log('script finder: NOT LOCAL')
             resolve('')
           }
         } else {
-          console.log('script finder: UNRECOGNIZED')
           resolve('')
         }
       })
     }
 
+    // TODO refactor to a gatherer object, don't need 2 functions
     function gatherStyleText() {
       return new Promise((resolve, reject) => {
         const $styleTags = $('style, link')
         const styleFinders = []
         $styleTags.each((i, el) => {
+          // TODO refactor this to only pass through to be downloaded assets
           styleFinders.push(findStyles(el))
         })
 
@@ -106,7 +100,6 @@ const ts = new Transform({
           resolve(styleTextArray.join(''))
         })
           .catch((err) => {
-            console.log('style finder: error')
             reject(err)
           })
       })
@@ -121,11 +114,9 @@ const ts = new Transform({
         })
 
         Promise.all(scriptFinders).then((scriptTextArray) => {
-          console.log('gathered scripts')
           resolve(scriptTextArray.join(''))
         })
           .catch((err) => {
-            console.log('script finder: error')
             reject(err)
           })
       })
@@ -133,28 +124,21 @@ const ts = new Transform({
 
     const styleGatherer = gatherStyleText().then((styleText) => {
       // add css property to stream object
-      console.log('done gathering styles')
       page.styles = styleText
     })
-    // add js property to stream object
       .catch((err) => {
-        console.log('error gathering styles')
         next(err)
       })
 
     const scriptGatherer = gatherScriptText().then((scriptText) => {
-      console.log('done gathering scripts')
+      // add scripts property to stream object
       page.scripts = scriptText
     })
       .catch((err) => {
-        console.log('error gathering scripts')
         next(err)
       })
 
     Promise.all([styleGatherer, scriptGatherer]).then(() => {
-      console.log('sending updated page')
-      // TODO send this page to the purify module
-      // console.log(page)
       next(null, `${JSON.stringify(page)}${EOL}`)
     })
       .catch((err) => {
