@@ -1,13 +1,8 @@
 # Stylepurge
 
 Crawls a URL for its HTML, CSS, and JS assets. Then, uses [purifycss](https://github.com/purifycss/purifycss/)
-to discover unused CSS and returns a diff of the original and purified styles.
+to discover unused CSS and returns the purified styles.
 
-## Usage
-
-```
-./node index.js --url=https://google.com
-```
 
 ## License
 

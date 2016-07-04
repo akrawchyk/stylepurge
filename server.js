@@ -39,6 +39,10 @@ app.get('/purge', (req, res, next) => {
         res.end()
       }
     })
+
+    stream.on('error', (err) => {
+      res.status(500).send(err.message)
+    })
   }
 })
 

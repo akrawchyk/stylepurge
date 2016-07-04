@@ -1,15 +1,14 @@
 /**
- * Finder - finds CSS and JS in an HTML document assets and inlines them
- * Reads stream of HTML
- * Extracts styles from link hrefs
- * Replaces link tags with style tags
- * Extracts scripts from script srcs
- * Replaces script srcs with script tags
- * Writes out expanded HTML
+ * Finder - finds CSS and JS in an HTML document assets and extracts them
+ * Reads HTML document
+ * Finds styles in style tags and link hrefs
+ * Downloads CSS if necessary
+ * Finds scripts in script tags
+ * Downloads JS if necessary
  */
 
-// const through = require('through2')
 const cheerio = require('cheerio')
+const oust = require('oust')
 const request = require('superagent')
 const url = require('url')
 const StringDecoder = require('string_decoder').StringDecoder
@@ -24,127 +23,100 @@ function find() {
       const page = JSON.parse(decoder.write(chunk)) // page { url, response }
 
       // parse html
-      const $ = cheerio.load(page.html)
       const p = url.parse(page.url)
+      // this makes matching CDN names easier for assets on this domain, won't
+      // work well for linked external assets though
+      const ownHostname = /^(\w+)\.\w+$/.exec(p.hostname)[1] // get hostname without the .xyz
 
+      // checks if this asset is owned by the page
+      function isOwnAsset(assetUrl) {
+        const u = url.parse(assetUrl)
+        let own = false
+
+        // absolute url
+        if (u.host && u.hostname.indexOf(ownHostname) >= 0) {
+          own = true
+        }
+
+        // relative url
+        if (!u.protocol && !u.host && (
+          u.path.charAt(0) === '.' || (u.path.charAt(0) === '/') && (u.path.charAt(1) !== '/'))) {
+          own = true
+        }
+
+        return own
+      }
+
+      // resolves a relative url to its absolute url on this page's domain
       function resolveUrl(href) {
         let u = url.parse(href)
+        // if url === page.url and path === / or ./ or ../
         if (!u.protocol && !u.host && (
           u.path.charAt(0) === '.' || (u.path.charAt(0) === '/') && (u.path.charAt(1) !== '/'))) {
             u = url.resolve(p, u.pathname)
           }
-          return u
+
+        return u
       }
 
-      function findStyles(el) {
-        const $el = $(el)
+      // downloads asset, rejects if failed
+      function fetchAsset(u) {
         return new Promise((resolve, reject) => {
-          if ($el.is('style')) {
-            resolve($el.text())
-          } else if ($el.is('link') && $el.attr('rel') === 'stylesheet' && $el.attr('href')) {
-            const u = resolveUrl($el.attr('href'))
-
-            if (u.host && u.host.indexOf(p.host) >= 0) {
-              request.get(u.href).buffer(true).end((err, res) => {
-                if (err) {
-                  reject(err)
-                }
-
-                resolve(res.text)
-              })
-            } else {
-              resolve('')
+          request.get(u.href).buffer(true).end((err, res) => {
+            if (err) {
+              reject(err)
             }
-          } else {
-            resolve('')
+
+            resolve(res.text)
+          })
+        })
+      }
+
+      // gather asset urls
+      const cssUrls = oust(page.html, 'stylesheets')
+        .concat(oust(page.html, 'preload'))
+        .filter(isOwnAsset)
+      const cssDownloads = cssUrls
+        .map(resolveUrl)
+        .map(fetchAsset)
+
+      const jsUrls = oust(page.html, 'scripts')
+        .filter(isOwnAsset)
+      const jsDownloads = jsUrls
+        .map(resolveUrl)
+        .map(fetchAsset)
+
+      // TODO imports
+
+      const assetDownloads = cssDownloads.concat(jsDownloads)
+
+      Promise.all(assetDownloads).then((assetsText) => {
+        const stylesText = assetsText.slice(0, cssUrls.length)
+        const scriptsText = assetsText.slice(cssUrls.length)
+
+        // extract all relevant asset text
+        const $ = cheerio.load(page.html)
+
+        $('style').each((i, el) => {
+          stylesText.push($(el).text())
+        })
+
+        $('script').each((i, el) => {
+          const $el = $(el)
+          if (!$el.attr('src') && ($el.attr('type') === 'text/javascript' || !$el.attr('type'))) {
+            scriptsText.push($el.text())
           }
         })
-      }
 
-      function findScripts(el) {
-        const $el = $(el)
-        return new Promise((resolve, reject) => {
-          if  ($el.is('script') && ($el.attr('type') === 'text/javascript' || !$el.attr('type')) && $el.attr('src')) {
-            let u = resolveUrl($el.attr('src'))
+        page.styles = stylesText.join('')
+        page.scripts = scriptsText.join('')
 
-            // only grab assets local to this page
-            // if path === / or ./ or ../
-            // if url === page.url
-            if (u.host && u.host.indexOf(p.host) >= 0) {
-              request.get(u.href).buffer(true).end((err, res) => {
-                if (err) {
-                  reject(err)
-                }
-
-                resolve(res.text)
-              })
-            } else {
-              resolve('')
-            }
-          } else {
-            resolve('')
-          }
-        })
-      }
-
-      // TODO refactor to a gatherer object, don't need 2 functions
-      function gatherStyleText() {
-        return new Promise((resolve, reject) => {
-          const $styleTags = $('style, link')
-          const styleFinders = []
-          $styleTags.each((i, el) => {
-            // TODO refactor this to only pass through to be downloaded assets
-            styleFinders.push(findStyles(el))
-          })
-
-          Promise.all(styleFinders).then((styleTextArray) => {
-            resolve(styleTextArray.join(''))
-          })
-            .catch((err) => {
-              reject(err)
-            })
-        })
-      }
-
-      function gatherScriptText() {
-        return new Promise((resolve, reject) => {
-          const $scriptTags = $('script')
-          const scriptFinders = []
-          $scriptTags.each((i, el) => {
-            scriptFinders.push(findScripts(el))
-          })
-
-          Promise.all(scriptFinders).then((scriptTextArray) => {
-            resolve(scriptTextArray.join(''))
-          })
-            .catch((err) => {
-              reject(err)
-            })
-        })
-      }
-
-      const styleGatherer = gatherStyleText().then((styleText) => {
-        // add css property to stream object
-        page.styles = styleText
-      })
-        .catch((err) => {
-          next(err)
-        })
-
-      const scriptGatherer = gatherScriptText().then((scriptText) => {
-        // add scripts property to stream object
-        page.scripts = scriptText
-      })
-        .catch((err) => {
-          next(err)
-        })
-
-      Promise.all([styleGatherer, scriptGatherer]).then(() => {
         next(null, `${JSON.stringify(page)}${EOL}`)
       })
         .catch((err) => {
           next(err)
         })
+
     },
 
     flush() {

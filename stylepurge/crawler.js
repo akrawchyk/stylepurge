@@ -1,6 +1,6 @@
 /**
  * Crawler
- * PhantomJS writes to stream with content of crawled pages
+ * PhantomJS writes to stream with content of a crawled page
  * Streams HTML from phantomjs after document load
  */
 
