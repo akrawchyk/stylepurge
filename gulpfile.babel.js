@@ -41,8 +41,8 @@ gulp.task('webpack-dev-server', function(next) {
 
   // Start a webpack-dev-server
   new WebpackDevServer(webpack(myConfig), {
-    publicPath: '/' + myConfig.output.publicPath,
-    contentBase: './' + myConfig.output.publicPath,
+    contentBase: 'http://localhost:8000',
+    publicPath: myConfig.output.publicPath,
     proxy: {
       '/purge': 'http://localhost:8000'
     },
