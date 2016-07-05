@@ -6,6 +6,11 @@ var app = express()
 app.use(bodyParser.json()); // for parsing application/json
 app.use(express.static('public'))
 
+// var client = require('redis').createClient()
+//
+// client.on('error', function (err) {
+//   process.stderr.write('Redis Error: ' + err)
+// })
 
 app.get('/purge', (req, res, next) => {
   var url = req.query.url

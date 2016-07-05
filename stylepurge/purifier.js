@@ -19,7 +19,6 @@ function purify() {
           next(null, `${JSON.stringify({ url: page.url, purified: purified, original: page.styles })}${EOL}`)
         })
       } catch (e) {
-        console.log(e)
         next(e)
       }
     },

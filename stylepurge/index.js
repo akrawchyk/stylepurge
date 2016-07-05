@@ -30,6 +30,7 @@
 const crawler = require('./crawler')
 const finder = require('./finder')
 const purifier = require('./purifier')
+const differ = require('./differ')
 
 
 module.exports = function(urls) {
@@ -40,6 +41,7 @@ module.exports = function(urls) {
   return crawler(urls)
     .pipe(finder())
     .pipe(purifier())
+    .pipe(differ())
     .on('error', (err) => {
       process.stderr.write(err.message)
     })

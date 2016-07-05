@@ -8,6 +8,9 @@ module.exports = {
     publicPath: 'http://localhost:8080/static/',
     filename: 'app.bundle.js',
   },
+  resolve: {
+        extensions: ['', '.js', '.css']
+  },
   loaders: [{
     test: /\.js$/,
     exclude: /(node_modules)/,
@@ -24,8 +27,8 @@ module.exports = {
   plugins: [
     new webpack.ProvidePlugin({
       'Promise': 'exports?global.Promise!es6-promise',
-      'fetch': 'exports?global.fetch!whatwg-fetch',
-      'Prism': 'exports?global.Prism!prismjs'
+      'fetch': 'exports?global.fetch!whatwg-fetch'
+      // 'Prism': 'exports?global.Prism!prismjs'
     })
   ]
 }
