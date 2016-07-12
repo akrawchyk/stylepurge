@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <title>Test</title>
+        <link href="/css/example.css" rel="stylesheet">
+        <style>
+            .reject {
+                color: white;
+            }
+
+            .style-link {
+                background: red;
+            }
+
+            #js-target {
+                border: 1px solid red;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <a class="style-link">red link</a>
+
+            <p id="js-target">js target</p>
+
+        </div>
+        <script src="/js/example.js"></script>
+
+        <script>
+            var scriptTag = '1234'
+            var target = 'js-target'
+            var el = document.getElementById('js-target')
+            el.classList.add(target)
+        </script>
+    </body>
+</html>
