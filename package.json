@@ -1,0 +1,26 @@
+{
+  "name": "styleclient",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "async": "^2.0.0",
+    "domutils": "^1.5.1",
+    "htmlparser2": "^3.9.1",
+    "phantom": "^2.1.12",
+    "purify-css": "^1.1.9",
+    "temp": "^0.8.3"
+  },
+  "devDependencies": {
+    "finalhandler": "^0.5.0",
+    "serve-static": "^1.11.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT"
+}

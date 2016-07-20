@@ -1,12 +1,13 @@
-var express = require('express')
-var app = express()
+const finalhandler = require('finalhandler')
+const http = require('http')
+const serveStatic = require('serve-static')
 
-app.use(express.static(__dirname + '/public'))
+// Serve up public/ftp folder
+const serve = serveStatic(__dirname + '/public', { index: ['index.html'] })
 
-// serve index.html
-// with examples of style and link tags
-// with examples of script tags
-
-app.listen(8001, () => {
-  console.log('Test app listening on port 8001')
+// Create server
+const server = http.createServer(function onRequest (req, res) {
+  serve(req, res, finalhandler(req, res))
 })
+
+module.exports = server
