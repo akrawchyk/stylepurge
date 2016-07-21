@@ -7,7 +7,7 @@
     "test": "test"
   },
   "dependencies": {
-    "async": "^2.0.0",
+    "bluebird": "^3.4.1",
     "domutils": "^1.5.1",
     "htmlparser2": "^3.9.1",
     "phantom": "^2.1.12",
@@ -15,6 +15,10 @@
     "temp": "^0.8.3"
   },
   "devDependencies": {
+    "eslint": "^3.1.1",
+    "eslint-config-standard": "^5.3.5",
+    "eslint-plugin-promise": "^2.0.0",
+    "eslint-plugin-standard": "^2.0.0",
     "finalhandler": "^0.5.0",
     "serve-static": "^1.11.1"
   },

@@ -2,12 +2,10 @@
 
 // const cluster = require('cluster')
 const purifyCss = require('purify-css')
-const DOMGrabber = require('./lib/domGrabber')
+const HTMLGrabber = require('./lib/htmlGrabber')
 const findContent = require('./lib/contentFinder')
 
 // TODO cluster DOMGrabber to support multiple phantom instances
-
-
 
 // we want to call the phantom process
 //
@@ -15,8 +13,7 @@ const findContent = require('./lib/contentFinder')
 //  - emit event when new html is available
 //
 
-
-const dg = new DOMGrabber({ url: 'http://localhost:8001' })
+const dg = new HTMLGrabber({ url: 'https://themobileys.com/' })
 
 dg.on('ready', () => {
   console.log('DOMGrabber ready')
@@ -32,11 +29,7 @@ dg.on('html', (html, url) => {
   // (and store that html in redis
   //  and store that url<>string relationship in redis)
 
-  // FIXME purify-css tries to compress the content first. If it fails, it assumes
-  //       it isn't JS and then returns the full code, see https://is.gd/fmUuZA
   findContent(html).then((accum) => {
-    console.dir(accum)
-
     purifyCss([accum.body, accum.js], [accum.css], { rejected: true }, (purified) => {
       console.log(purified)
     })
@@ -44,5 +37,4 @@ dg.on('html', (html, url) => {
     .catch((err) => {
       console.log(err)
     })
-
 })
