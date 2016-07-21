@@ -1,3 +1,11 @@
-.style-css {
+.css {
     background: red;
+}
+
+.reject-css {
+    color: white;
+}
+
+.js-target {
+    opacity: 0;
 }

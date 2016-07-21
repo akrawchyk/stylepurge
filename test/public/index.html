@@ -3,7 +3,7 @@
         <title>Test</title>
         <link href="/css/example.css" rel="stylesheet">
         <style>
-            .reject {
+            .reject-style {
                 color: white;
             }
 
@@ -11,24 +11,26 @@
                 background: red;
             }
 
-            #js-target {
+            #script-target {
                 border: 1px solid red;
             }
         </style>
     </head>
     <body>
         <div>
-            <a class="style-link">red link</a>
+            <a class="style-link"></a>
+            <p class="css"></p>
 
-            <p id="js-target">js target</p>
-
+            <div class="js-target"></div>
+            <div id="script-target"></div>
         </div>
+
         <script src="/js/example.js"></script>
 
         <script>
             var scriptTag = '1234'
             var target = 'js-target'
-            var el = document.getElementById('js-target')
+            var el = document.getElementById('script-target')
             el.classList.add(target)
         </script>
     </body>

@@ -11,4 +11,6 @@ const server = http.createServer(function onRequest (req, res) {
   serve(req, res, finalhandler(req, res))
 })
 
-server.listen(8001)
+server.listen(8101, () => {
+  console.log('listening on port 8101')
+})
